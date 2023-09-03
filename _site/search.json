@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "posts/post-with-code/index.html",
+    "href": "posts/post-with-code/index.html",
+    "title": "Post With Code",
+    "section": "",
+    "text": "This is a post with executable code."
+  },
+  {
+    "objectID": "posts/welcome/index.html",
+    "href": "posts/welcome/index.html",
+    "title": "Welcome To My Blog",
+    "section": "",
+    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Anubhav’s blog",
+    "section": "",
+    "text": "No matching items"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About Me",
+    "section": "",
+    "text": "Hey, I’m Anubhav Maity, a ML Engineer at Expedia Group. My day job involves training, deploying, and keeping an eye on ML models for fraud detection.\nOutside of my job, I immerse myself in NLP and Deep Learning through coursework, participation in Kaggle competitions, and reading of research papers, with a particular focus on Generative AI Models.\nJoin me on this blog as I share my ML experiences and insights. Let’s explore the world of AI and data together.\nThanks for stopping by!"
+  },
+  {
+    "objectID": "posts/welcome/Untitled.html",
+    "href": "posts/welcome/Untitled.html",
+    "title": "Myblog",
+    "section": "",
+    "text": "Hi\n\n1 + 2\n\n3"
+  }
+]

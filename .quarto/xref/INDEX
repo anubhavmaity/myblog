@@ -1,0 +1,23 @@
+{
+  "posts/post-with-code/index.qmd": {
+    "index.html": "d02f4abe"
+  },
+  "posts/welcome/index.qmd": {
+    "index.html": "bdb7523b"
+  },
+  "index.qmd": {
+    "index.html": "456bb786"
+  },
+  "about.qmd": {
+    "about.html": "5f18c880"
+  },
+  "posts/welcome/Untitled.ipynb": {
+    "Untitled.html": "4bd6e571"
+  },
+  "posts/HuggingFaceNLPCourseP1ReviewAndSummary/post.ipynb": {
+    "post.html": "4eaef378"
+  },
+  "posts/HuggingFaceNLPCourseP1ReviewAndSummary/index.ipynb": {
+    "index.html": "eb485d27"
+  }
+}

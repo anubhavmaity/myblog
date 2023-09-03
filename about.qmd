@@ -1,0 +1,26 @@
+---
+title: "About Me"
+image: profile.jpg
+about:
+  template: jolla
+  links:
+    - icon: twitter
+      text: Twitter
+      href: https://twitter.com/MaityAnubhav
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/anubhav-maity
+    - icon: github
+      text: Github
+      href: https://github.com/anubhavmaity
+
+---
+
+Hey, I'm Anubhav Maity, a ML Engineer at Expedia Group. My day job involves training, deploying, and keeping an eye on ML models for fraud detection.
+
+Outside of my job, I immerse myself in NLP and Deep Learning through coursework, participation in Kaggle competitions, and reading of research papers, with a particular focus on Generative AI Models.
+
+Join me on this blog as I share my ML experiences and insights. Let's explore the world of AI and data together.
+
+Thanks for stopping by!
+
