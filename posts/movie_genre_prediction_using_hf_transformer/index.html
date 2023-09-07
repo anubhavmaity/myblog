@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Anubhav Maity">
+<meta name="dcterms.date" content="2023-09-06">
+<meta name="description" content="My attempt on the Movie Genre Predictions competition">
+
+<title>Myblog - Movie Genre Predictions with Hugging Face Transformers</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Myblog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About Me</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/anubhavmaity" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/MaityAnubhav" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Movie Genre Predictions with Hugging Face Transformers</h1>
+                  <div>
+        <div class="description">
+          My attempt on the Movie Genre Predictions competition
+        </div>
+      </div>
+                </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Anubhav Maity </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 6, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<section id="movie-genre-predictions-with-hugging-face-transformers" class="level1">
+<h1>Movie Genre Predictions with Hugging Face Transformers</h1>
+<p>Install the following packages by uncommenting the following if not installed already</p>
+<div class="cell" data-execution_count="97">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install datasets</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install transformers -U</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install huggingface_hub</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install rich</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install accelerate -U</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install evaluate</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Following are the steps to create hugging face credentials token which be needed when using <code>notebook_login</code> below</p>
+<ol type="1">
+<li><strong>Create a Hugging Face account (if you don’t have one)</strong>: If you don’t already have an account on the Hugging Face website, you’ll need to create one. Visit the Hugging Face website (https://huggingface.co/) and sign up for an account.</li>
+<li><strong>Log in to your Hugging Face account</strong>: Use your credentials to log in to your Hugging Face account.</li>
+<li><strong>Generate an API token</strong>: Hugging Face provides API tokens for authentication. To generate an API token, go to your account settings on the Hugging Face website. You can usually find this in your account dashboard or profile settings.</li>
+<li><strong>Generate the token</strong>: Once you’re in your account settings, look for an option related to API tokens or credentials. You should find an option to generate a new token. Click on it, and the system will generate a unique API token for you.</li>
+<li><strong>Copy the API token</strong>: Once the token is generated, you’ll typically see it displayed on the screen. It might be a long string of characters. Copy this token to your clipboard.</li>
+<li><strong>Store the token securely</strong>: API tokens are sensitive credentials, so it’s essential to store them securely. You should never share your API token publicly or expose it in your code repositories.</li>
+</ol>
+<p>Now, you have your Hugging Face API token, which you can use for authentication when making requests to the Hugging Face API or accessing resources on the Hugging Face Model Hub.</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> huggingface_hub <span class="im">import</span> notebook_login</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>notebook_login()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"35123681e1414ee1baa54df67ba8c4a4","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<p>Lets import the following pacakges</p>
+<div class="cell" data-tags="[]" data-execution_count="172">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> TrainingArguments, Trainer, AutoTokenizer, AutoModelForSequenceClassification</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> evaluate</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rich <span class="im">import</span> <span class="bu">print</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="datasets" class="level2">
+<h2 class="anchored" data-anchor-id="datasets">Datasets</h2>
+<p>We will be using the <code>datadrivenscience/movie-genre-prediction</code> competition dataset for model training. You can read more about the competition <a href="https://huggingface.co/spaces/competitions/movie-genre-prediction">here</a> and the dataset <a href="https://huggingface.co/datasets/datadrivenscience/movie-genre-prediction">here</a>.</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> load_dataset(<span class="st">"datadrivenscience/movie-genre-prediction"</span>)<span class="op">;</span> dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"07cc7caee3c848f99162d8fadd2d9dcc","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"387027bc2c044c148da7116d5f5b7a4c","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"ee9369da433a481f9c648bc4ea4cd3a5","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"87fec8450fa546a0b8b023f4c2335d7b","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"35cf6f82d7da4e38881834524ec43285","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"d7be4e6ae6f244918fd7a5f8bd269bf5","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"8f17bae5acbb4805bff85f86fd0020bb","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ['id', 'movie_name', 'synopsis', 'genre'],
+        num_rows: 54000
+    })
+    test: Dataset({
+        features: ['id', 'movie_name', 'synopsis', 'genre'],
+        num_rows: 36000
+    })
+})</code></pre>
+</div>
+</div>
+<p>The dataset has <code>train</code> and <code>test</code> splits with following features - id - movie name - synopsis - genre</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dataset[<span class="st">'train'</span>][:<span class="dv">3</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">{</span>
+    <span style="color: #008000; text-decoration-color: #008000">'id'</span>: <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">44978</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">50185</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">34131</span><span style="font-weight: bold">]</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'movie_name'</span>: <span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'Super Me'</span>, <span style="color: #008000; text-decoration-color: #008000">'Entity Project'</span>, <span style="color: #008000; text-decoration-color: #008000">'Behavioral Family Therapy for Serious Psychiatric Disorders'</span><span style="font-weight: bold">]</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'synopsis'</span>: <span style="font-weight: bold">[</span>
+        <span style="color: #008000; text-decoration-color: #008000">'A young scriptwriter starts bringing valuable objects back from his short nightmares of being chased by a </span>
+<span style="color: #008000; text-decoration-color: #008000">demon. Selling them makes him rich.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'A director and her friends renting a haunted house to capture paranormal events in order to prove it and </span>
+<span style="color: #008000; text-decoration-color: #008000">become popular.'</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'This is an educational video for families and family therapists that describes the Behavioral Family </span>
+<span style="color: #008000; text-decoration-color: #008000">Therapy approach to dealing with serious psychiatric illnesses.'</span>
+    <span style="font-weight: bold">]</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'genre'</span>: <span style="font-weight: bold">[</span><span style="color: #008000; text-decoration-color: #008000">'fantasy'</span>, <span style="color: #008000; text-decoration-color: #008000">'horror'</span>, <span style="color: #008000; text-decoration-color: #008000">'family'</span><span style="font-weight: bold">]</span>
+<span style="font-weight: bold">}</span>
+</pre>
+</div>
+</div>
+<p>Above we have sliced and printed 3 rows of training dataset</p>
+<div class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> <span class="bu">set</span>(dataset[<span class="st">'train'</span>][<span class="st">'genre'</span>])</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>num_labels <span class="op">=</span> <span class="bu">len</span>(labels)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="28">
+<pre><code>{'action',
+ 'adventure',
+ 'crime',
+ 'family',
+ 'fantasy',
+ 'horror',
+ 'mystery',
+ 'romance',
+ 'scifi',
+ 'thriller'}</code></pre>
+</div>
+</div>
+<p>There are 10 genres, - action - adventure - crime - family - fantasy - horror - mystery - romance - scifi - thriller</p>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>labels_count <span class="op">=</span> Counter(dataset[<span class="st">'train'</span>][<span class="st">'genre'</span>])<span class="op">;</span> <span class="bu">print</span>(labels_count)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">Counter</span><span style="font-weight: bold">({</span>
+    <span style="color: #008000; text-decoration-color: #008000">'fantasy'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'horror'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'family'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'scifi'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'action'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'crime'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'adventure'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'mystery'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'romance'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>,
+    <span style="color: #008000; text-decoration-color: #008000">'thriller'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5400</span>
+<span style="font-weight: bold">})</span>
+</pre>
+</div>
+</div>
+<p>Looks like the labels are evenly sampled, everyone has count of 5400. Thats good.</p>
+</section>
+<section id="tokenization" class="level2">
+<h2 class="anchored" data-anchor-id="tokenization">Tokenization</h2>
+<div class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>checkpoint <span class="op">=</span> <span class="st">"bert-base-uncased"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A checkpoint is a saved model state, including its architecture and trained weights, which can be used for various NLP tasks and fine-tuning.</p>
+<div class="cell" data-execution_count="63">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(checkpoint)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>tokenizer(<span class="st">'Movie Genre Predictions with Hugging Face Transformers'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="63">
+<pre><code>{'input_ids': [101, 3185, 6907, 20932, 2007, 17662, 2227, 19081, 102], 'token_type_ids': [0, 0, 0, 0, 0, 0, 0, 0, 0], 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1]}</code></pre>
+</div>
+</div>
+<p>Above we load the tokenizer and use it on a sentence. Loading a checkpoint of a tokenizer associated with a pretrained language model is necessary to maintain consistency in the tokenization process. This ensures that your input text is processed in a way that aligns with the model’s pre-existing knowledge and allows you to use the pretrained model effectively</p>
+<p>What is <code>attention_mask</code>? &gt; Sometimes, we want to tell the computer which parts of the sentence are important and which are not. The attention mask is like a spotlight. It’s a list of 1s and 0s, where 1 means “pay attention” and 0 means “ignore.” For our sentence, it could be [1, 1, 1, 1, 1] because we want the computer to pay attention to all tokens.</p>
+<p>What is <code>token_type_ids</code>? &gt; If you have multiple sentences, you’d want the computer to know which sentence each token belongs to. Token Type IDs help with that. For one sentence, it’s all 0s. If you had two sentences, the first sentence would have 0s, and the second sentence would have 1s.</p>
+<p>Let’s break down the process of creating <code>input_ids</code> below into following steps:</p>
+<section id="tokenize" class="level4">
+<h4 class="anchored" data-anchor-id="tokenize">1. Tokenize:</h4>
+<p>Imagine you have a sentence, “Hugging Face is awesome!” To help a computer understand it, you first split it into smaller parts, like words: [“Hugging”, “Face”, “is”, “awesome”, “!”]. These smaller parts are called tokens.</p>
+<p>We can tokenize the synopsis of the first row of training set</p>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="st">'train'</span>][<span class="dv">0</span>][<span class="st">'synopsis'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<pre><code>'A young scriptwriter starts bringing valuable objects back from his short nightmares of being chased by a demon. Selling them makes him rich.'</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>tokens <span class="op">=</span> tokenizer.tokenize(dataset[<span class="st">'train'</span>][<span class="dv">0</span>][<span class="st">'synopsis'</span>])<span class="op">;</span> tokens</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>['a',
+ 'young',
+ 'script',
+ '##writer',
+ 'starts',
+ 'bringing',
+ 'valuable',
+ 'objects',
+ 'back',
+ 'from',
+ 'his',
+ 'short',
+ 'nightmares',
+ 'of',
+ 'being',
+ 'chased',
+ 'by',
+ 'a',
+ 'demon',
+ '.',
+ 'selling',
+ 'them',
+ 'makes',
+ 'him',
+ 'rich',
+ '.']</code></pre>
+</div>
+</div>
+</section>
+<section id="conversion-to-ids" class="level4">
+<h4 class="anchored" data-anchor-id="conversion-to-ids">2. Conversion to IDs:</h4>
+<p>Computers prefer numbers, so we need to convert these tokens into unique numbers. Each token gets a special ID. For example, “Hugging” might be ID 101, “Face” might be ID 102, and so on. The sentence becomes a list of IDs: [101, 102, 103, 104, 105].</p>
+<div class="cell" data-tags="[]" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ids <span class="op">=</span> tokenizer.convert_tokens_to_ids(tokens)<span class="op">;</span> ids</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>[1037,
+ 2402,
+ 5896,
+ 15994,
+ 4627,
+ 5026,
+ 7070,
+ 5200,
+ 2067,
+ 2013,
+ 2010,
+ 2460,
+ 15446,
+ 1997,
+ 2108,
+ 13303,
+ 2011,
+ 1037,
+ 5698,
+ 1012,
+ 4855,
+ 2068,
+ 3084,
+ 2032,
+ 4138,
+ 1012]</code></pre>
+</div>
+</div>
+<p>In summary, Hugging Face tokenization takes your text, breaks it into tokens (smaller parts), gives each token a unique ID, creates an attention mask to say what’s important, and token type IDs to track different sentences if needed.</p>
+<div class="cell" data-execution_count="54">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> dataset.rename_column(<span class="st">'genre'</span>, <span class="st">'labels'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="87">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> dataset.class_encode_column(<span class="st">"labels"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"e4fd1857c7f64e54abad1fd5519c12a3","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"407882e815264819896a6ab1a933f9a1","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+</div>
+<div class="cell" data-execution_count="126">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> dataset[<span class="st">"train"</span>].train_test_split(test_size<span class="op">=</span><span class="fl">0.2</span>, stratify_by_column<span class="op">=</span><span class="st">"labels"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="127">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="127">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ['id', 'movie_name', 'synopsis', 'labels'],
+        num_rows: 43200
+    })
+    test: Dataset({
+        features: ['id', 'movie_name', 'synopsis', 'labels'],
+        num_rows: 10800
+    })
+})</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="89">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tokenize(sample):</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    sample[<span class="st">"labels"</span>] <span class="op">=</span> dataset[<span class="st">"train"</span>].features[<span class="st">"labels"</span>].str2int(sample[<span class="st">"labels"</span>])</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tokenizer(sample[<span class="st">'synopsis'</span>], truncation<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="130">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>tokenized_ds <span class="op">=</span> ds.<span class="bu">map</span>(tokenize, batched<span class="op">=</span><span class="va">True</span>)<span class="op">;</span> tokenized_ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="130">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ['id', 'movie_name', 'synopsis', 'labels', 'input_ids', 'token_type_ids', 'attention_mask'],
+        num_rows: 43200
+    })
+    test: Dataset({
+        features: ['id', 'movie_name', 'synopsis', 'labels', 'input_ids', 'token_type_ids', 'attention_mask'],
+        num_rows: 10800
+    })
+})</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="131">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>tokenized_test_ds <span class="op">=</span> dataset[<span class="st">"test"</span>].<span class="bu">map</span>(tokenize, batched<span class="op">=</span><span class="va">True</span>)<span class="op">;</span> tokenized_test_ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"b969c4ebeffd4bca9847da6b2bc5e239","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="131">
+<pre><code>Dataset({
+    features: ['id', 'movie_name', 'synopsis', 'labels', 'input_ids', 'token_type_ids', 'attention_mask'],
+    num_rows: 36000
+})</code></pre>
+</div>
+</div>
+<p>The above code tokenizes the dataset’s <code>synopsis</code> feature using the tokenize function in a batch wise manner</p>
+</section>
+</section>
+<section id="training" class="level2">
+<h2 class="anchored" data-anchor-id="training">Training</h2>
+<div class="cell" data-tags="[]" data-execution_count="132">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>training_args <span class="op">=</span> TrainingArguments(<span class="st">'movie-genre-predictions'</span>, </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                                  evaluation_strategy <span class="op">=</span> <span class="st">'epoch'</span>,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                                  per_device_train_batch_size <span class="op">=</span> <span class="dv">32</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                                  per_device_eval_batch_size <span class="op">=</span> <span class="dv">64</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                                  save_strategy <span class="op">=</span> <span class="st">'epoch'</span>,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>                                  push_to_hub <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>                                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The above code sets up the configuration for training a Hugging Face model, for a movie genre prediction task. Let’s break it down step by step:</p>
+<ol type="1">
+<li><p><code>TrainingArguments</code>: This is a special object or data structure that holds various settings and options for training a machine learning model.</p></li>
+<li><p><code>'movie-genre-predictions'</code>: It’s naming the training process or giving it a unique name. It’s like giving a name to a file so you can easily identify it later.</p></li>
+<li><p><code>evaluation_strategy = 'epoch'</code>: This line specifies how often the model’s performance should be evaluated. In this case, it’s set to ‘epoch,’ which means after every complete pass through the training data. An epoch is like a full round of training.</p></li>
+<li><p><code>per_device_train_batch_size = 32</code>: This indicates how many examples or data points should be processed at once on each processing unit during training. It’s set to 32, so 32 data points will be processed together in parallel.</p></li>
+<li><p><code>per_device_eval_batch_size = 64</code>: Similar to the previous line, but this one specifies the batch size for evaluation (measuring how well the model is doing). It’s set to 64, so 64 examples will be evaluated at once.</p></li>
+<li><p><code>save_strategy = 'epoch'</code>: This determines when the model’s checkpoints (saves of the model’s progress) should be saved. Again, it’s set to ‘epoch,’ meaning after each training round.</p></li>
+<li><p><code>push_to_hub = True</code>: This is likely specific to the Hugging Face Transformers library. If set to ‘True,’ it means that the model checkpoints will be pushed or uploaded to the Hugging Face Model Hub, a place to store and share models.</p></li>
+</ol>
+<p>In simple terms, this code is configuring how a machine learning model should be trained for movie genre prediction. It sets up details like when to check how well the model is doing, how much data to process at a time, and where to save the model’s progress. It also says that the model checkpoints should be uploaded to the Hugging Face Model Hub.</p>
+<p>You may see more details about <code>TrainingArguments</code> <a href="https://huggingface.co/docs/transformers/main_classes/trainer#transformers.TrainingArguments">here</a></p>
+<div class="cell" data-execution_count="133">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels <span class="op">=</span> num_labels)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Some weights of BertForSequenceClassification were not initialized from the model checkpoint at bert-base-uncased and are newly initialized: ['classifier.bias', 'classifier.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.</code></pre>
+</div>
+</div>
+<p>Above we load the model for <code>Sequence Classification</code> of 10 labels</p>
+<div class="cell" data-execution_count="154">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>clf_metrics <span class="op">=</span> evaluate.load(<span class="st">"accuracy"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <code>evaluate</code> library provides the metrics on which to evaluate the validation set. Above I have choosen accuracy as the metrics</p>
+<div class="cell" data-execution_count="155">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_metrics(batch):</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    logits, labels <span class="op">=</span> batch</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> np.argmax(logits, axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> clf_metrics.compute(predictions<span class="op">=</span>predictions, references<span class="op">=</span>labels)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I have defined <code>compute_metrics</code> to compute the metrics after each epoch on validation set</p>
+<div class="cell" data-execution_count="156">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>trainer <span class="op">=</span> Trainer(model, </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>                  args <span class="op">=</span> training_args,</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>                  train_dataset <span class="op">=</span> tokenized_ds[<span class="st">'train'</span>],</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                  eval_dataset <span class="op">=</span> tokenized_ds[<span class="st">'test'</span>], </span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                  tokenizer <span class="op">=</span> tokenizer,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                  compute_metrics <span class="op">=</span> compute_metrics</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <code>Trainer</code> function in Hugging Face simplifies the process of fine-tuning pre-trained NLP models for specific tasks. It handles data loading, training, evaluation, and model saving, making it easier to customize and use these models for various NLP tasks.</p>
+<div class="cell" data-execution_count="157">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>trainer.train()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      
+      <progress value="4050" max="4050" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      [4050/4050 09:22, Epoch 3/3]
+    </div>
+    
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Epoch</th>
+<th data-quarto-table-cell-role="th">Training Loss</th>
+<th data-quarto-table-cell-role="th">Validation Loss</th>
+<th data-quarto-table-cell-role="th">Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>0.283500</td>
+<td>3.311370</td>
+<td>0.317315</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>1.029200</td>
+<td>2.257011</td>
+<td>0.325463</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>0.676700</td>
+<td>2.709101</td>
+<td>0.312685</td>
+</tr>
+</tbody>
+</table>
+<p>
+</p></div>
+<div class="cell-output cell-output-display" data-execution_count="157">
+<pre><code>TrainOutput(global_step=4050, training_loss=0.6523225073166835, metrics={'train_runtime': 562.6496, 'train_samples_per_second': 230.339, 'train_steps_per_second': 7.198, 'total_flos': 3860478233326848.0, 'train_loss': 0.6523225073166835, 'epoch': 3.0})</code></pre>
+</div>
+</div>
+</section>
+<section id="submitting-to-the-competition" class="level2">
+<h2 class="anchored" data-anchor-id="submitting-to-the-competition">Submitting to the competition</h2>
+<div class="cell" data-execution_count="161">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>test_logits <span class="op">=</span> trainer.predict(tokenized_test_ds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+</div>
+</div>
+<div class="cell" data-execution_count="165">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>test_logits.predictions.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="165">
+<pre><code>(36000, 10)</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="166">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>test_predictions <span class="op">=</span> np.argmax(test_logits.predictions, axis<span class="op">=-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="170">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>predicted_genre <span class="op">=</span> dataset[<span class="st">"train"</span>].features[<span class="st">"labels"</span>].int2str(test_predictions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="174">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({<span class="st">'id'</span>:tokenized_test_ds[<span class="st">'id'</span>],</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'genre'</span>: predicted_genre})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="175">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>df.to_csv(<span class="st">'submission.csv'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
