@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/Paper_Implementation_A_Neural_Algorithm_of_Artistic_Style/index.html",
       "/posts/lsh_with_zero_for_loops/index.html",
       "/posts/movie_genre_prediction_using_hf_transformer/index.html"
     ]

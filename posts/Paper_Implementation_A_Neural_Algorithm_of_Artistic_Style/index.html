@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Anubhav Maity">
+<meta name="dcterms.date" content="2024-06-22">
+<meta name="description" content="My implementation of the paper A Neural Algorithm of Artistic Style">
+
+<title>Myblog - Paper Implementation: A Neural Algorithm of Artistic Style</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Myblog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About Me</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/anubhavmaity"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/MaityAnubhav"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Paper Implementation: A Neural Algorithm of Artistic Style</h1>
+                  <div>
+        <div class="description">
+          My implementation of the paper A Neural Algorithm of Artistic Style
+        </div>
+      </div>
+                </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Anubhav Maity </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">June 22, 2024</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="style-transfer" class="level1">
+<h1>Style Transfer</h1>
+<blockquote class="blockquote">
+<p>Here we will implement the paper <a href="https://arxiv.org/pdf/1508.06576"><code>Neural Algorithm of Artistic Style</code></a> by Gatys et. al.&nbsp;I came across this paper and the concept in the Johno Whitaker’s lecture on <a href="https://course.fast.ai/Lessons/lesson20.html">Style Transfer</a>. The video is a must watch. We will use the <code>minai</code> library. The <code>minai</code> library is implemented in the <a href="https://course.fast.ai/">Part 2</a> of the fastai course. The library is built over pytorch and easy to use.</p>
+</blockquote>
+<p>The neural algorithm of artistic style is a deep learning technique developed to transfer the style of one image (typically an artwork) onto another image (typically a photograph), creating a new image that combines the content of the photograph with the style of the artwork. Key Concepts:</p>
+<pre><code>1. Convolutional Neural Networks (CNNs): The algorithm uses a pre-trained CNN, such as VGG-19, to extract features from images at multiple layers. Lower layers capture detailed textures and edges, while higher layers capture more abstract content and style information.
+
+2. Content Representation: The content of an image is represented by the activations of higher layers of the CNN. These layers encode the spatial arrangement of objects in the image.
+
+3. Style Representation: The style of an image is represented using Gram matrices of the activations from multiple layers of the CNN. The Gram matrix captures the correlations between different filter responses, representing textures and patterns characteristic of the style.
+
+4. Optimization Process: The style transfer is achieved by iteratively updating a white noise image (or the content image) to minimize two losses:
+    - Content Loss: Ensures that the generated image retains the content of the original photograph. This is typically the squared error between the feature representations of the content image and the generated image at a particular layer.
+    - Style Loss: Ensures that the generated image captures the style of the artwork. This is calculated as the squared error between the Gram matrices of the style image and the generated image at multiple layers.</code></pre>
+<p>Process:</p>
+<pre><code>1. Extract content features from a specific layer of the CNN for the content image.
+2. Extract style features (Gram matrices) from multiple layers of the CNN for the style image.
+3. Initialize a generated image (either white noise or the content image).
+4. Define a loss function combining content loss and style loss.
+5. Use gradient descent to iteratively update the generated image to minimize the loss function.
+6. The final result is an image that combines the content of the photograph with the artistic style of the artwork.</code></pre>
+<p>This algorithm has been widely used and extended in various applications, including stylizing videos, real-time style transfer, and more. It represents a significant advancement in the field of neural networks and computer vision.</p>
+<div id="05f39898-da9f-4078-935f-068015f2ce15" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> timm</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> fastcore.<span class="bu">all</span> <span class="im">as</span> fc</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch <span class="im">import</span> nn, optim</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torchvision</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> minai.datasets <span class="im">import</span> show_image, show_images</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> minai.learner <span class="im">import</span> TrainCB, DeviceCB, ProgressCB, MetricsCB, Learner, DataLoaders, Callback, def_device, to_cpu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/conda-envs/fastai/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm</code></pre>
+</div>
+</div>
+<div id="db281b8c-bdd3-46bc-bdc4-f6d8b913df50" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>timm.list_models(<span class="st">'*vgg19*'</span>, pretrained<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>['vgg19.tv_in1k', 'vgg19_bn.tv_in1k']</code></pre>
+</div>
+</div>
+<div id="7e944972-16bc-438f-b602-63b83fb68de4" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>vgg19 <span class="op">=</span> timm.create_model(<span class="st">'vgg19'</span>, pretrained<span class="op">=</span><span class="va">True</span>).to(def_device).features</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="49ef6468-3d1f-4f3e-84c2-5cb0f823cc35" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>vgg19</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Sequential(
+  (0): Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (1): ReLU(inplace=True)
+  (2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (3): ReLU(inplace=True)
+  (4): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  (5): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (6): ReLU(inplace=True)
+  (7): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (8): ReLU(inplace=True)
+  (9): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  (10): Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (11): ReLU(inplace=True)
+  (12): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (13): ReLU(inplace=True)
+  (14): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (15): ReLU(inplace=True)
+  (16): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (17): ReLU(inplace=True)
+  (18): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  (19): Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (20): ReLU(inplace=True)
+  (21): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (22): ReLU(inplace=True)
+  (23): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (24): ReLU(inplace=True)
+  (25): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (26): ReLU(inplace=True)
+  (27): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  (28): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (29): ReLU(inplace=True)
+  (30): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (31): ReLU(inplace=True)
+  (32): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (33): ReLU(inplace=True)
+  (34): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (35): ReLU(inplace=True)
+  (36): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+)</code></pre>
+</div>
+</div>
+<p>In the paper the authors have replaced the <code>max_pooling</code> layers with <code>average_pooling</code> layers stating that it improves gradient flow and one obtains more appealing results. In the above vgg19 model there are 5 <code>max_pooling</code> layers which we can replace with the following function</p>
+<div id="aaac1ef5-2c50-489f-a509-f13117c29d4f" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> replace_maxpool_with_avgpool(model):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, l <span class="kw">in</span> <span class="bu">enumerate</span>(model.children()):</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(l, nn.MaxPool2d): </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>            model[i] <span class="op">=</span> nn.AvgPool2d(kernel_size<span class="op">=</span><span class="dv">2</span>, stride<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="e50d05b2-9ff6-4bf6-997d-e36342458388" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>replace_maxpool_with_avgpool(vgg19)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In the paper the content image is depicting the <code>Neckarfront in Tubingen, Germany</code>. There are multiple style images: - The Shipwreck of the Minotaur by JMW Turner, 1805. - The Starry Night by Vincent Van Gogh, 1889. - Der Schrei by Edvard Munch, 1893. - Femme nue assise by Pablo Picaso, 1910. - Composition VII by Wassily Kandisky, 1913.</p>
+<div id="33bd6be9-1435-43de-b255-665ea986a0c7" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>content_url <span class="op">=</span> <span class="st">'https://upload.wikimedia.org/wikipedia/commons/0/00/Tuebingen_Neckarfront.jpg'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="12d911a2-a22a-421a-8aa0-66eef37c1bcb" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> download_image(url):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    imgb <span class="op">=</span> fc.urlread(url, decode<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torchvision.io.decode_image(torch.tensor(<span class="bu">list</span>(imgb), dtype<span class="op">=</span>torch.uint8)).to(def_device) <span class="op">/</span> <span class="dv">255</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="58e691d4-2715-481e-b264-dc94e68205ab" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>content_img <span class="op">=</span> download_image(content_url)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>show_image(content_img, title<span class="op">=</span><span class="st">'Neckarfront'</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="content-reconstruction" class="level2">
+<h2 class="anchored" data-anchor-id="content-reconstruction">Content Reconstruction</h2>
+<blockquote class="blockquote">
+<p>We can visualize the information at different processing stages in VGG19 by recontructing the above content image from only knowing the network’s responses in a particular layer. For reconstruction we will use white noise image as the starting point.</p>
+</blockquote>
+<div id="65566377-0ca3-4a7d-a5e9-650957366e6b" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TensorModel(nn.Module):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, t):</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.t <span class="op">=</span> nn.Parameter(t.clone())</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="056b0e53-2e88-488e-9dd4-9e702d2ccb53" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>[p.shape <span class="cf">for</span> p <span class="kw">in</span> model.parameters()]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>[torch.Size([3, 768, 1024])]</code></pre>
+</div>
+</div>
+<p>In the paper, the authors picked the layers <code>conv1_1</code>, <code>conv2_1</code>, <code>conv3_1</code>, <code>conv4_1</code> and <code>conv5_1</code> for the content reconstruction. Here’s a breakdown of what each of these terms means: - conv1_1: The first convolutional layer in the first block. - conv2_1: The first convolutional layer in the second block. - conv3_1: The first convolutional layer in the third block. - conv4_1: The first convolutional layer in the fourth block. - conv5_1: The first convolutional layer in the fifth block.</p>
+<p>VGG19 is structured in a series of convolutional blocks, each containing multiple convolutional layers followed by a max-pooling layer. The naming convention “convX_Y” denotes the Y-th convolutional layer in the X-th block. Here’s the detailed architecture:</p>
+<pre><code>Block 1:
+    conv1_1: 3x3 convolution, 64 filters
+    conv1_2: 3x3 convolution, 64 filters
+    Max-pooling
+
+Block 2:
+    conv2_1: 3x3 convolution, 128 filters
+    conv2_2: 3x3 convolution, 128 filters
+    Max-pooling
+
+Block 3:
+    conv3_1: 3x3 convolution, 256 filters
+    conv3_2: 3x3 convolution, 256 filters
+    conv3_3: 3x3 convolution, 256 filters
+    conv3_4: 3x3 convolution, 256 filters
+    Max-pooling
+
+Block 4:
+    conv4_1: 3x3 convolution, 512 filters
+    conv4_2: 3x3 convolution, 512 filters
+    conv4_3: 3x3 convolution, 512 filters
+    conv4_4: 3x3 convolution, 512 filters
+    Max-pooling
+
+Block 5:
+    conv5_1: 3x3 convolution, 512 filters
+    conv5_2: 3x3 convolution, 512 filters
+    conv5_3: 3x3 convolution, 512 filters
+    conv5_4: 3x3 convolution, 512 filters
+    Max-pooling</code></pre>
+<p>So the layers that we will pick are <code>0, 5, 10, 19, 28</code></p>
+<p>The VGG19 has been trained on imagenet dataset and their <a href="https://stackoverflow.com/questions/58151507/why-pytorch-officially-use-mean-0-485-0-456-0-406-and-std-0-229-0-224-0-2">mean and standard deviation</a> are <code>[0.485, 0.456, 0.406]</code> and <code>[0.229, 0.224, 0.225]</code> respectively. We will normalize the above content image with the same mean and standard deviation</p>
+<div id="243354d0-41d3-4377-91ed-736e60968433" class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>mean <span class="op">=</span> torch.tensor([<span class="fl">0.485</span>, <span class="fl">0.456</span>, <span class="fl">0.406</span>], device<span class="op">=</span>def_device)[:, <span class="va">None</span>, <span class="va">None</span>] <span class="co"># 3, 1, 1</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>std <span class="op">=</span> torch.tensor([<span class="fl">0.229</span>, <span class="fl">0.224</span>, <span class="fl">0.225</span>], device<span class="op">=</span>def_device)[:, <span class="va">None</span>, <span class="va">None</span>] <span class="co"># 3, 1, 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="ebc26bb8-be92-4e35-8281-fa99736025a3" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>mean.shape, std.shape, content_img.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(torch.Size([3, 1, 1]), torch.Size([3, 1, 1]), torch.Size([3, 768, 1024]))</code></pre>
+</div>
+</div>
+<div id="e179d39a-52e4-4ffd-9675-441968e091ce" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>content_img.<span class="bu">min</span>(), content_img.<span class="bu">max</span>(), content_img.mean(), content_img.std()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(tensor(0., device='cuda:0'),
+ tensor(1., device='cuda:0'),
+ tensor(0.44, device='cuda:0'),
+ tensor(0.22, device='cuda:0'))</code></pre>
+</div>
+</div>
+<div id="cd0c1f83-0701-47cb-8ed0-5fabdbcb3822" class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> normalize(img, mean, std):</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (img <span class="op">-</span> mean) <span class="op">/</span> std</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>content_norm_img <span class="op">=</span> normalize(content_img, mean, std)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>content_norm_img.<span class="bu">min</span>(), content_norm_img.<span class="bu">max</span>(), content_norm_img.mean(dim<span class="op">=</span>(<span class="dv">1</span>,<span class="dv">2</span>)), content_norm_img.std(dim<span class="op">=</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(tensor(-2.12, device='cuda:0'),
+ tensor(2.64, device='cuda:0'),
+ tensor([-0.35, -0.02,  0.29], device='cuda:0'),
+ tensor([0.96, 0.88, 1.10], device='cuda:0'))</code></pre>
+</div>
+</div>
+<p>We can also normalize using torchvision’s normalize function</p>
+<div id="9b6bc59e-5845-40e2-96ae-345ec1fbb6a2" class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.transforms.functional <span class="im">import</span> normalize</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="708111b6-a4c0-4e9f-b2a2-1083576cdf8d" class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>content_norm_img <span class="op">=</span> normalize(content_img, mean, std)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>content_norm_img.<span class="bu">min</span>(), content_norm_img.<span class="bu">max</span>(), content_norm_img.mean(dim<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">2</span>)), content_norm_img.std(dim<span class="op">=</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(tensor(-2.12, device='cuda:0'),
+ tensor(2.64, device='cuda:0'),
+ tensor([-0.35, -0.02,  0.29], device='cuda:0'),
+ tensor([0.96, 0.88, 1.10], device='cuda:0'))</code></pre>
+</div>
+</div>
+<p>Following is the function to get the features from the layers</p>
+<div id="db4e20ea-34b5-47cd-bdf1-dd09b5d75a86" class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_features(x, layers<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">28</span>)):</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> normalize(x, mean, std)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    feats <span class="op">=</span> []</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, layer <span class="kw">in</span> <span class="bu">enumerate</span>(vgg19):</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> layer(x)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="kw">in</span> layers:</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>            feats.append(x)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> feats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="59547145-a1ef-4da3-9880-80e45b74da76" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>feats <span class="op">=</span> calc_features(content_img)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="03d28206-08be-4ab4-aa8f-7ab963e9bb78" class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>[p.shape <span class="cf">for</span> p <span class="kw">in</span> feats]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>[torch.Size([64, 768, 1024]),
+ torch.Size([128, 384, 512]),
+ torch.Size([256, 192, 256]),
+ torch.Size([512, 96, 128]),
+ torch.Size([512, 48, 64])]</code></pre>
+</div>
+</div>
+<p>A loss function will be needed to detect how much the starting noisy white image is close to the features</p>
+<div id="bb1c7793-bca3-44a6-a0aa-657b27117a36" class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ContentLoss(nn.Module):</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, img, layers<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">28</span>)):</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>        fc.store_attr()</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.feats <span class="op">=</span> calc_features(img, layers<span class="op">=</span>layers)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">sum</span>(F.mse_loss(l1, l2) <span class="cf">for</span> l1, l2 <span class="kw">in</span> <span class="bu">zip</span>(calc_features(x, layers<span class="op">=</span><span class="va">self</span>.layers), <span class="va">self</span>.feats))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Setting up the infrastructure for training with <code>minai</code> library</p>
+<div id="9f59e1bd-853a-4465-8d85-8346b0019964" class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DummyDataset:</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, length<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.length <span class="op">=</span> length</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__len__</span>(<span class="va">self</span>): <span class="cf">return</span> <span class="va">self</span>.length</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, idx): <span class="cf">return</span> <span class="dv">0</span>, <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="24689654-d64b-4c70-8756-b07ceac21ab3" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_dummy_dls(length):</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> DataLoaders(DataLoader(DummyDataset(length), <span class="dv">1</span>), DataLoader(DummyDataset(<span class="dv">1</span>), <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="2477eea6-2fcb-44cb-a093-067d5d5c7757" class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ImageOptCB(TrainCB):</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, learn): learn.preds <span class="op">=</span> learn.model()</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get_loss(<span class="va">self</span>, learn): learn.loss <span class="op">=</span> learn.loss_func(learn.preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="8b48ee00-6763-44a3-941a-e6ecad08872c" class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ImageLogCB(Callback):</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    order <span class="op">=</span> ProgressCB.order <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, log_every<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>        fc.store_attr()</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.i <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.imgs <span class="op">=</span> []</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> after_batch(<span class="va">self</span>, learn):</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.i <span class="op">%</span> <span class="va">self</span>.log_every <span class="op">==</span> <span class="dv">0</span>: <span class="va">self</span>.imgs.append(to_cpu(learn.preds.clip(<span class="dv">0</span>, <span class="dv">1</span>)))</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.i <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> after_fit(<span class="va">self</span>, learn):</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>        show_images(<span class="va">self</span>.imgs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can try reconstructing the <code>content image</code> with following layers</p>
+<ol type="1">
+<li><code>conv1_1</code></li>
+</ol>
+<div id="abaea569-95c3-40b0-a285-c8bffb9eb657" class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">0</span>,))</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">30</span>)]</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">150</span>), content_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="a0ba4f19-6e02-410f-8dd5-6520035bc910" class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.048</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.000</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-28-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-28-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="b8db7ab1-dc9c-4e4a-a5f3-74db4d737da4" class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="2" type="1">
+<li><code>conv2_1</code></li>
+</ol>
+<div id="6432f07c-2478-44db-9e2e-d9bf5eecf62b" class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">5</span>,))</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">30</span>)]</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">150</span>), content_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="fb0dde49-d18e-4624-a5e9-a46e3ed96d1a" class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.189</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.019</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-31-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-31-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="7f4e250b-0f62-458e-914c-445b1852ac63" class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-32-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="3" type="1">
+<li><code>conv3_1</code></li>
+</ol>
+<div id="0e899950-6e5f-4271-b3ae-0c91cefcdef5" class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">10</span>,))</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">30</span>)]</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">150</span>), content_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="e4cbfe35-eec1-4421-8168-0e4e456677d6" class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.244</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.037</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-34-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-34-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="a5db8c34-de6e-4084-b13e-2d0eb3d3952a" class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-35-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="4" type="1">
+<li><code>conv4_1</code></li>
+</ol>
+<div id="41922fbe-adf9-484c-ac82-9a64a523b79f" class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">19</span>,))</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">30</span>)]</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">150</span>), content_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="8a7f0dbd-e78a-4cc0-949a-2eaa489187d0" class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.102</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.026</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-37-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-37-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="83215258-861d-4ac6-a70b-d14cccbf4385" class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(learn.model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-38-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="5" type="1">
+<li><code>conv5_1</code></li>
+</ol>
+<div id="6082f328-933b-4fd6-ba51-368eb6d626b3" class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">28</span>,))</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">30</span>)]</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">150</span>), content_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="b5cc564a-a4aa-4974-83a8-9bedf1bdd583" class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.013</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.002</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-40-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-40-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="b1079669-f683-4b29-8ff3-b6f66f1eaa1b" class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(learn.model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-41-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The results of the above layers are not that similar to paper’s results. We may required more iterations or changes in hyperparameter to get the same kind of results as in the paper.</p>
+</section>
+<section id="style-reconstruction" class="level2">
+<h2 class="anchored" data-anchor-id="style-reconstruction">Style Reconstruction</h2>
+<blockquote class="blockquote">
+<p>The style representation computes correlation between different features in different layers of the CNN using gram matrix</p>
+</blockquote>
+<p>The idea here is that we will measure the <strong>correlation</strong> between features. Given a feature map with f features in an <code>h</code> x <code>w</code> grid, we will flatten out the spatial component and then for every feature we will take the dot product of that row with itself, giving an <code>f</code> x <code>f</code> matrix as the result. Each entry in this matrix qualifies how correlated the relevant pair of features are and how frequently are and how frequently they occur - exactly what we want. In this diagram each feature is represented as colored dot.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAArQAAADoCAYAAAAe7Xd/AAAAAXNSR0IArs4c6QAADjp0RVh0bXhmaWxlACUzQ214ZmlsZSUyMGhvc3QlM0QlMjJhcHAuZGlhZ3JhbXMubmV0JTIyJTIwbW9kaWZpZWQlM0QlMjIyMDIyLTEyLTIyVDEwJTNBNTAlM0E0Ni4wMjNaJTIyJTIwYWdlbnQlM0QlMjI1LjAlMjAoWDExJTNCJTIwTGludXglMjB4ODZfNjQpJTIwQXBwbGVXZWJLaXQlMkY1MzcuMzYlMjAoS0hUTUwlMkMlMjBsaWtlJTIwR2Vja28pJTIwQ2hyb21lJTJGMTA3LjAuMC4wJTIwU2FmYXJpJTJGNTM3LjM2JTIyJTIwdmVyc2lvbiUzRCUyMjIwLjcuNCUyMiUyMGV0YWclM0QlMjJPMVdpcmNRRENQWlR6MHdidDJMayUyMiUyMHR5cGUlM0QlMjJkZXZpY2UlMjIlM0UlM0NkaWFncmFtJTIwaWQlM0QlMjJpd0JHcmZqT09zRE1Cb3d0Tk94VCUyMiUyMG5hbWUlM0QlMjJQYWdlLTElMjIlM0U3WjF0YjlzMkVNYyUyRmpZR3V3QUk5UzM2WnVFMkhZaW02dHR2NmxyWW9XNWdzZWpRZEolMkYzMEkyM0pEeUt6eUtuRlUwZ1hSU3ZSTWkzOTd2VG5rVWRSQTM4MGYlMkZoQTBXSjJSMUpjRER3bmZSajQ3d2FlbDNnSiUyRjFjVVBHNExRaSUyRmVGa3hwbm02TDNIM0IxJTJGd0hyZ3FkcW5TVnAzaDVkQ0FqcEdENTRyaHdRc29TVDloUkdhS1VySThQeTBoeCUyRktzTE5NVlN3ZGNKS3VUU3YlMkZPVXphcFNOeHJ1UCUyRmdONTlNWnF5JTJCNHVyNDVxZyUyQnVybVE1UXlsWkh4VDU3d2YlMkJpQkxDdGx2emh4RXVCTHVheSUyRlo3dDA5OHVqc3hpa3ZXNWdzM2Y5NG0lMkYzNjclMkYlMkZnNSUyRiUyQnZqeCUyRlVmbjY2ZFclMkZ5ck8lMkZTMjlkeWpZbFZkY25XNjdMRm1RTW1xVExHb3hobjROJTJCdFp6dkRYQlpxSVQ5ZmM2THhzeHVZRjMzUDVabFVkcGd3JTJGUEhtbTd1NzZ1ZDlnTXNlTVB2SkRxaSUyQkVRYmo5U3VVemdWTWhYTzh0a0ZSRnMwUDJWUm1xYkQ3ZDFiekh3amNxTXFkUThzTCUyQlVmSkM1MWxLN2xDRktld0trJTJGczhKWDRYTE1RbVEyTlJkTWhFaFd6SkVHV1ZLZ2lzJTJGRFpuS0M4eHJiNHpJVVdCRnN0OFU5bjJpRmxlcEwlMkJqUjdKaTljJTJGVWV6ZFpYaFFqVWhDNk9SY2Z1Mm1JNDgydlVQSVBQdmhrR01VJTJCaXM1anAlMkJEWVRINmlNSk9uTU5PdXNBTjNQdEZPWDRSdTNjd0l6WDhJJTJGa1dGdW1tYzVUcWZGNmprZW9qU1J0RU4yVFFBb29pUlJiVlY0SXhWbTJQQ0dKbFhPN1NDNENnTm5GS3klMkJJYm9GTmVISEZxMUpLWHdxZ1hKUzdiQkZ0N3d2eHpreUxrS0J5RyUyRnNoSGZkJTJGZjclMkZLODRuTElSS2JrYmNOOFMxV0swWkd1OFpHMDk0SDl1Qjlrdm5qTjgwSm5kJTJGZloyNTFmSGNsUjg0VzBxS3FkdGJ0V3FCVVo3U3lrTWM1cnhDY2VlRlp0R2M1YW5LUzUlMkZ6aDdlcyUyRmJ3aDZlWm82cHNUJTJCbmsybERCTUMwUjQzY0liejZXa28xMzUlMkZrVFpnOHVabjlhbm1zakhkZ3Q4TTdwQlcxcTAlMkJFRkxVSVllNzBnY1NVdk1GTUxva3ZURDlqMFB4NGJIaTRTaU8wV2c4alNTQ0M1bVAwU0NiakRpeGRjSW9HNnZibEVBcENSUU52Qm9NNGlBZSUyQkVNVHNEeGVCZ0pONnFTS0MyOHNYc05rY0NuZ2tEZ2h1WnglMkZUOVBkNnFmZXYweWtzOHc1cm9RQjR6dk1XSXJhZzQzVHR1WHM5NWs0bDJsSiUyRnA5ciUyRjFMNUxyY1BqczJFMk9FeTJWQ3lpOEFoWDVsTnYyM1FRTDAlMkZJQ1ljcDhnb3JyNm9NNXQlMkY3R0IxV09kNXlKYSUyQlVMcDZWd3dwYXR0dDlacTkyaSUyRjg2cnlSZkxweGdkR0FVdEY5dk1lWlklMkZDR3JOTkZtS2NKSk5KT3Z4VDZKSmdzZlplUmhITGJLWnFpeFpaNGhiOUpMT2hqaExKbmlpUkR4T3dpQThreHUzU1JqclJPeTNpRDNQaHpqRGtScHhHZyUyRkh6cGtRRHh0S01ZUkczS0tGUDU5UWhEaEpBeFhpeEJ2NzBabnk2YTdUTjhZdHh0UmZtUmk3UWQlMkJrb3NYSTVTdFRZOWZ2RzJPdExaNFdPVzYyZUQ0dzR2cTJNa2dxbW5HYktyZWxGYkhPb0VKUGk5ZEVETzdGTFFhUFhwa1lONFVDM0l0MXhtMGdvVEc4RiUyQnNNMiUyRlI0Y1JNeHVCZnJqTnFBSW1Ob3hxSE9rQUlvTWdabnJMUEJnd25iVklsSXJZaGJURkxWNmNacFRua1ZPUkdEemFja2dVOExNOENwdDVnVSUyQnNyRGpCZ2FzWGtqRjAzRTRGNXMzc0NGMUFSQ3UzRmtYcmRhQ3VYQUdjdWR2cGtFMlppa2F0UEQ2MmNzbjZIZldVNDFraU9RdGJuMGg0MUhiRnNtVVRxam4lMkJqVWx5ekx2Q2MwUEJwSDRabjBSZkp3cDUySGQ2WXZpZFp1akJZTmY2bUtkTWRZNjhDZGxuQlBZaHhBTTliWlY5VFRIWmNZMTYwUkdHTjVocEZqYm12NDB0bEhuVDJpbjhpOVJwdndlOUQ0NVI2bGF4SCUyQmx1T3RuZUd2ZzFGTDhVZlElMkJPWE1tTW40azU1cCUyRjFCdWVtM0NENjM5UTd1YTNpWiUyQmNPMlhtMTZiOEVOcnYlMkJ2SUtTR0QlMkJmdE96OFRmZGVURzF5YiUyQjBPcnZPbGExdmhKJTJGYVBsM0hibjV0WWslMkZ1UDRyVmdzem1iJTJGWE4lMkYxWHJOTmxFMzl3JTJGVmVza0dVVGYzRDlWeXhOWlJOJTJGY1AxWHJBbVFtY3ZmayUyRlFudmdLZWglMkJBcW5yMWY4dDNObHJOJTJCYSUyRktVRURlNWloc1RFeFNUeTBLdnRwRWVnOVExR3pRM0laVG5KclQwJTJCODR5anE3V3g4SDFURSUyQlFNSHM5d096cDlHWTlUMiUyRkpNeFRnTVd0OThsN0xKQVVKY3hUQVk3YXJ1JTJGckM1JTJGSzdDeGQ5dTRhTG0lMkZ6QnU2dUt4U2RzOG4lMkZ3N3FwdjFUd3BpVDk0ZDFXeE1JakolMkZQczJUODFWTEJwaUUzOXclMkZWZXNLR0t5JTJGdmR0cHBxcldHN0VKdjdnJTJCcTlZaThSayUyRmVuYlhEVlhzVkNKVGZ6aDlkJTJCdSUyRm0lMkZmWnF1NWdWM3AydDVOVjFPczRtTXclMkY2QjMwOVVDcSUyRnElMkZFbjk0JTJGYmRxdXBURUgxNyUyRnJlciUyRlN2ekI5ViUyQnglMkZKWEolMkZ0JTJCNzZXcWhWZjFmaVQlMkI0JTJGaXVXSmpOWmYzbzNYUzIwcXY4cjhRZlglMkYwanJLcDU2NXVaSXE4UkJKOWtqcmE4YjBUTXpKJTJCNGRaUE1XaWd1bGxlTEFJZXRjS2s3VFNwNXUzeURIY2t4dThCVGlVSW9Kb1NjUXgzSk1iakwlMkZ4TGx5dlJmZEFoMmFRQTRMUTROTjhNSTNTM1VYRnNaeVdzUzNpRDk0dHpTVzB5STI4UWZ2bHNaV3BVVWslMkZ1RGQwbGp1TVpucyUyRjgzT0ZMeiUyQnk1MHBtJTJGakQ2NzlWQzZoSiUyRk1IMXY4N1RXOG9mWFA4Vnl4bWJyRCUyRk5jUjV3JTJGVmNzZFd5eSUyRnpmNWclMkJ1JTJGWWhuazJDTCUyQjhQb3Y5MzlOSG45bzhvZlhmNnVtQlVwRDBQRDZiMVglMkZWJTJCSVByJTJGOXklMkY5ZGclMkZaSDR3JTJCdSUyRjNQJTJCMWlUJTJCOCUyRnN2OTM5c0NNVjV5aXhGYlVjeTM3amdNejNtVERieVJzTXN2NXRxbiUyQmQ0N1AxYmtaNFlLQTNXWG9Ca3FjbVRjUUF5WEJwdkJPVjVieDFlOGdqZlNhd1U1VFAzJTJCOXZ2Vk4zRmZmTG9aJTJCTmQ4Z3l6RWF4aFJVWWdyU2ZQN1BCVTN6JTJGalI4SHZHYjR4cHFJekZSVzJYJTJCdFJrTURtdSUyRlVEUmZLTm1qT1lQQjRLV2NlTkVoVERHbVBLdHFkaDZNeUdVWW42ZmlSZHJjdE5tNHJpdElKcHN5MkFvcGFoOTFjdm1ORXRnaTFsZGt4VzkzNUFROUhHWlhsTksxZ0pzZ1piTGZISnNIUlUzbkU3eHFkUU9sJTJGcFNFS25MdG81MGYxeTlDbFAxQzU5SlhySzlVZHptRFpZMFNDJTJGSmlrNXc5YTA5YktraTMzMm1Jb2JvRkRPcElzNFNQUjRjdGhBSExKOCUyQllhJTJGNU81VldQM1ZlWHZNQ2o0JTJGbkc5c3oyTHZRemdZJTJGNDFVdHByRVo3Rlc4NjN2bEhQNkp6dU5rb2I5Ym1MQVpSSjNaellMZ05EY0xuYk82R2QlMkJsaExERHc3a3F6JTJCNUlpc1VSJTJGd0UlM0QlM0MlMkZkaWFncmFtJTNFJTNDJTJGbXhmaWxlJTNFSsa0jwAAIABJREFUeF7tnQd4FcX6/19CCYQmAqH3DpGiqBC6ha6oCJf2o4MgAgpyrYjoBa4KUkRFQRCleYGLgqKUizSjV0GQHpXeQw81of2f79z/4uHklNmze3L2nHznefIoyezszGfenf3uO+/MZLp58+ZNYSIBEiABEiABEiABEiCBMCWQiYI2THuO1SYBEiABEiABEiABElAEKGhpCCRAAiRAAiRAAiRAAmFNgII2rLuPlScBEiABEiABEiABEqCgpQ2QAAmQAAmQAAmQAAmENQEK2rDuPlaeBEiABEiABEiABEiAgpY2QAIkQAIkQAIkQAIkENYEKGjDuvtYeRIgARIgARIgARIgAQpa2gAJkAAJkAAJkAAJkEBYE6CgDevuY+VJgARIgARIgARIgAQoaGkDJEACJEACJEACJEACYU2Agjasu4+VJwESIAESIAESIAESoKClDZAACZAACZAACZAACYQ1AQrasO4+Vp4ESIAESIAESIAESICCljZAAiRAAiRAAiRAAiQQ1gQoaMO6+1h5EiABEiABEiABEiABClraAAmQAAmQAAmQAAmQQFgToKAN6+5j5UmABEiABEiABEiABChoaQMkQAIkQAIkQAIkQAJhTYCCNqy7j5UnARIgARIgARIgARKgoKUNkAAJkAAJkAAJkAAJhDUBCtqw7j5WngRIgARIgARIgARIgIKWNkACJEACJEACJEACJBDWBChow7r7WHkSIAESIAESIAESIAEKWtoACZAACZAACZAACZBAWBOgoA3r7mPlSYAESIAESIAESIAEKGhpAyRAAiRAAiRAAiRAAmFNgII2rLuPlScBEiABEiABEiABEqCgpQ2QAAmQAAmQAAmQAAmENQEK2rDuPlaeBEiABEiABEiABEiAgpY2QAIkQAIkQAIkQAIkENYEKGjDuvtYeScQuHz5srRo0UK2bNki/fv3l6+++kq2bdvms2rDhw+Xhg0bysMPPyy7d++WESNGyKxZs5zQHNYhwgi8//778u6778rGjRvljjvuUK1LSEiQ9u3bq/8WLFhQlixZIseOHZM+ffpI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JEACJEAC9hCgoLWHI0shARIgARIgARIgARIIEQEK2hCB521JgARIgARIgARIgATsIUBBaw9HlkICJEACJEACJEACJBAiAhS0IQLP25IACZAACZAACZAACdhDgILWHo4shQRIgARIgARIgARIIEQEKGhDBJ63JQESIAESIAESIAESsIcABa09HFkKCZAACZAACZAACZBAiAhQ0IYIPG9LAiRAAiRAAiRAAiRgDwEKWns4shQSIAESIAESIAESIIEQEaCgDRF43pYESIAESIAESIAESMAeAhS09nBkKSRAAiRAAiRAAiRAAiEiQEEbIvC8LQmQAAmQAAmQAAmQgD0EKGjt4chSSIAESIAESIAESIAEQkSAgjZE4HlbEiABEiABEiABEiABewhQ0NrDkaWQAAmQAAmQAAmQAAmEiAAFbYjA87YkQAIkQAIkQAIkQAL2EKCgtYcjSyEBEiABEiABEiABEggRAQraEIHnbUmABEiABEiABEiABOwhQEFrD0eWQgIkQAIkQAIkQAIkECICFLQhAs/bkgAJkAAJkAAJkAAJ2EOAgtYejiyFBEiABEiABEiABEggRAQoaEMEnrclARIgARIgARIgARKwhwAFrT0cWQoJkAAJkAAJkAAJkECICFDQhgg8b0sCJEACJEACJEACJGAPAQpaeziyFBIgARIgARIgARIggRARoKANEXjelgRIgARIgARIgARIwB4CFLT2cGQpJEACJEACJEACJEACISJAQRsi8LwtCZAACZAACZAACZCAPQQoaO3hyFJIgARIgARIgARIgARCRICCNkTgeVsSIAESIAESIAESIAF7CFDQ2sORpZAACZAACZAACZAACYSIwP8DZLKxJ+lzKCUAAAAASUVORK5CYII=" class="img-fluid figure-img"></p>
+<figcaption>Alt Text</figcaption>
+</figure>
+</div>
+<p>Before creating the infrastructure for calculating the gram matrix and training for style reconstruction, we will download the <code>The Starry Night</code> image by Vincent Van Gogh</p>
+<div id="6b890c97-b3a1-41aa-9ea2-8849437ebd6d" class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>style_url <span class="op">=</span> <span class="st">'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1513px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg'</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>style_img <span class="op">=</span> download_image(style_url)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>show_image(style_img)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-42-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Now lets setup the infrastructure</p>
+<div id="f86762fe-b365-4462-9056-0dcfc1db4af3" class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_gram_matrix(x, layers<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">28</span>)):</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fc.L(torch.einsum(<span class="st">'chw, dhw -&gt; cd'</span>, f, f)<span class="op">/</span> (f.shape[<span class="op">-</span><span class="dv">1</span>] <span class="op">*</span> f.shape[<span class="op">-</span><span class="dv">2</span>]) <span class="cf">for</span> f <span class="kw">in</span> calc_features(x, layers))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="c57d0ddc-f24f-4c76-bc93-6a4b00dceb3d" class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>gram_matrix <span class="op">=</span> calc_gram_matrix(style_img)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="39017759-c382-4ce0-8771-1dce20bb0f6e" class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> StyleLoss(nn.Module):</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, img, layers<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">28</span>), layers_weight<span class="op">=</span>(<span class="fl">1.0</span>, <span class="fl">0.8</span>, <span class="fl">0.5</span>, <span class="fl">0.3</span>, <span class="fl">0.1</span>)):</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>        fc.store_attr()</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.gram_matrix <span class="op">=</span> calc_gram_matrix(img, <span class="va">self</span>.layers)</span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">sum</span>(w <span class="op">*</span> F.mse_loss(g1, g2) <span class="cf">for</span> w, g1, g2 <span class="kw">in</span> <span class="bu">zip</span>(<span class="va">self</span>.layers_weight, calc_gram_matrix(x, layers<span class="op">=</span><span class="va">self</span>.layers), <span class="va">self</span>.gram_matrix))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can try reconstructing the <code>style image</code> with following layers</p>
+<ol type="1">
+<li><code>conv1_1</code></li>
+</ol>
+<div id="b86304fa-e20f-4bf1-be46-24551366a956" class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(style_img, layers<span class="op">=</span>(<span class="dv">0</span>,), layers_weight<span class="op">=</span>(<span class="fl">1.0</span>,))</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(style_img))</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), style_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="1545cb9b-f97a-4fb0-9eb4-08db9885615a" class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.002</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.000</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-47-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-47-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="2" type="1">
+<li><code>conv1_1</code> and <code>conv2_1</code></li>
+</ol>
+<div id="fd3d2132-4914-4f75-ae3c-1ceadd1f6e9c" class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(style_img, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,), layers_weight<span class="op">=</span>(<span class="fl">1.0</span>, <span class="fl">0.8</span>))</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(style_img))</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">240</span>)]</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">1200</span>),  style_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="ea0bbfb7-dca1-43d3-8b61-e4a95e6f2457" class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.005</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.000</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-49-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-49-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="3" type="1">
+<li><code>conv1_1</code>, <code>conv2_1</code> and <code>conv3_1</code></li>
+</ol>
+<div id="55e2ea48-d8cb-40d9-8d45-5a4a90f18089" class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(style_img, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,), layers_weight<span class="op">=</span>(<span class="fl">1.0</span>, <span class="fl">0.8</span>, <span class="fl">0.5</span>,))</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(style_img))</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), style_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="4d029af3-b4c9-422e-95ef-03c45d24d5d8" class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.052</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.001</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-51-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-51-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="4" type="1">
+<li><code>conv1_1</code>, <code>conv2_1</code>, <code>conv3_1</code> and <code>conv4_1</code></li>
+</ol>
+<div id="4d2d6b28-7d9d-48f8-a712-8484ecff3971" class="cell">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(style_img, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">19</span>,), layers_weight<span class="op">=</span>(<span class="fl">1.0</span>, <span class="fl">0.8</span>, <span class="fl">0.5</span>, <span class="fl">0.3</span>,))</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(style_img))</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), style_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="a0fc5f9e-593d-4912-a515-3469ea0e1f88" class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.052</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.001</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-53-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-53-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="4" type="1">
+<li><code>conv1_1</code>, <code>conv2_1</code>, <code>conv3_1</code>, <code>conv4_1</code> and <code>conv5_1</code></li>
+</ol>
+<div id="7f02788e-a8e4-4c8c-a3c2-8413274e4049" class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(style_img, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">19</span>,<span class="dv">28</span>))</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(style_img))</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), style_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="908e21d2-ed8a-49ae-a0e9-00b3a629bd95" class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.052</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.001</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-55-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-55-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="078d72b2-f54b-4525-b9e0-48e9890aeb08" class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>show_image(learn.model().clip(<span class="dv">0</span>,<span class="dv">1</span>))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-56-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="content-style-representation" class="level2">
+<h2 class="anchored" data-anchor-id="content-style-representation">Content + Style Representation</h2>
+<p>Here we will mix the content image with different style images and see the results</p>
+<p>We will combine the losses: 1. <code>content_loss</code> and 2. <code>style_loss</code>. In the paper the authors combine both the losses with different ratios $ / $</p>
+<div id="cd26092e-09a6-490d-8c8d-b7215ef7e407" class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> combine_loss(x, alpha<span class="op">=</span><span class="dv">1</span>, beta<span class="op">=</span><span class="fl">1.5</span>):</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> alpha <span class="op">*</span> content_loss(x) <span class="op">+</span> beta <span class="op">*</span> style_loss(x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="the-starry-nights" class="level3">
+<h3 class="anchored" data-anchor-id="the-starry-nights">The Starry Nights</h3>
+<div id="204b50a6-f803-454b-b9f9-8b4ec4344147" class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>style_url <span class="op">=</span> <span class="st">'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1513px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg'</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>style_img <span class="op">=</span> download_image(style_url)</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>show_image(style_img)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-58-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="ec1fb684-ffdb-4256-bce1-773882769a57" class="cell">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(style_img, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">19</span>,<span class="dv">28</span>))</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">19</span>,))</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), combine_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="88446112-ba4e-4482-90f9-592e7cc92c50" class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.179</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.044</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-60-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-60-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="818fa376-3abe-4300-ba24-72186af7e29e" class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(learn.model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-61-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="the-shipwreck-of-the-minotaur" class="level3">
+<h3 class="anchored" data-anchor-id="the-shipwreck-of-the-minotaur">The Shipwreck of the Minotaur</h3>
+<div id="0545c349-fa29-4f36-89cc-c81ff9112d0a" class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>shipwreck_style_url <span class="op">=</span> <span class="st">'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Joseph_Mallord_William_Turner_-_The_Shipwreck_-_Google_Art_Project.jpg/1600px-Joseph_Mallord_William_Turner_-_The_Shipwreck_-_Google_Art_Project.jpg?20110220021219'</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>shipwreck_style_image <span class="op">=</span> download_image(shipwreck_style_url)</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>show_image(shipwreck_style_image)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-62-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="fd537c57-0d86-4dd5-a70a-8b55af3c8ee6" class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(shipwreck_style_image, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">19</span>,<span class="dv">28</span>))</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">19</span>,))</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), combine_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="1bfbceaf-27b1-4aeb-af63-aa8a6c56a847" class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.215</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.070</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-64-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-64-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="c024bacf-c27c-45b2-b304-15222c6406a4" class="cell">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(learn.model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-65-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="der-schrei" class="level3">
+<h3 class="anchored" data-anchor-id="der-schrei">Der Schrei</h3>
+<div id="341389e2-1025-4f56-92f1-e96f47a1f8ec" class="cell">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>der_schrei_style_url <span class="op">=</span> <span class="st">'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Edvard_Munch_-_The_Scream_-_Google_Art_Project.jpg/947px-Edvard_Munch_-_The_Scream_-_Google_Art_Project.jpg?20211001183357'</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>der_schrei_style_image <span class="op">=</span> download_image(der_schrei_style_url)</span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>show_image(der_schrei_style_image)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-66-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="0f034ebf-3a6d-485b-b4a5-b76c04a89045" class="cell">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(der_schrei_style_image, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">19</span>,<span class="dv">28</span>))</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">19</span>,))</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), combine_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="fbadc472-fed2-4f14-bcc1-db249937f71d" class="cell">
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.203</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.064</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-68-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-68-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="97927d02-c692-4fad-ab4e-36e33824abbb" class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(learn.model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-69-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="femme-nue-assise" class="level3">
+<h3 class="anchored" data-anchor-id="femme-nue-assise">Femme nue Assise</h3>
+<div id="a659a9d5-52ef-4220-8454-42cf36decdc2" class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>femme_nue_assise_sytle_url <span class="op">=</span> <span class="st">'https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/Pablo_Picasso%2C_1909-10%2C_Figure_dans_un_Fauteuil_%28Seated_Nude%2C_Femme_nue_assise</span><span class="sc">%29%</span><span class="st">2C_oil_on_canvas%2C_92.1_x_73_cm%2C_Tate_Modern%2C_London.jpg/919px-Pablo_Picasso%2C_1909-10%2C_Figure_dans_un_Fauteuil_%28Seated_Nude%2C_Femme_nue_assise</span><span class="sc">%29%</span><span class="st">2C_oil_on_canvas%2C_92.1_x_73_cm%2C_Tate_Modern%2C_London.jpg?20150127060348'</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>femme_nue_assise_sytle_image <span class="op">=</span> download_image(femme_nue_assise_sytle_url)</span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>show_image(femme_nue_assise_sytle_image)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-70-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="f94e61e7-de15-4d35-809e-d95ccc131d7f" class="cell">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(femme_nue_assise_sytle_image, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">19</span>,<span class="dv">28</span>))</span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">19</span>,))</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), combine_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span>
+<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.227</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.080</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-71-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-71-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="ee52cf54-56d3-4f11-b534-7822e98715a7" class="cell">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(learn.model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-72-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="composition-vii" class="level3">
+<h3 class="anchored" data-anchor-id="composition-vii">Composition VII</h3>
+<div id="da1fbf16-770b-47b7-9da8-e2d2ea81f5ff" class="cell">
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>composition_7_style_url <span class="op">=</span> <span class="st">'https://upload.wikimedia.org/wikipedia/commons/b/b4/Vassily_Kandinsky%2C_1913_-_Composition_7.jpg'</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>composition_7_sytle_image <span class="op">=</span> download_image(composition_7_style_url)</span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>show_image(composition_7_sytle_image)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-73-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="118af7ff-8c83-4d25-988f-b11248c63809" class="cell">
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>style_loss <span class="op">=</span> StyleLoss(composition_7_sytle_image, layers<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">19</span>,<span class="dv">28</span>))</span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>content_loss <span class="op">=</span> ContentLoss(content_img, layers<span class="op">=</span>(<span class="dv">19</span>,))</span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TensorModel(torch.rand_like(content_img))</span>
+<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a>cbs <span class="op">=</span> [DeviceCB(), MetricsCB(), ProgressCB(plot<span class="op">=</span><span class="va">True</span>), ImageOptCB(), ImageLogCB(<span class="dv">60</span>)]</span>
+<span id="cb85-5"><a href="#cb85-5" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> Learner(model, get_dummy_dls(<span class="dv">300</span>), combine_loss, cbs<span class="op">=</span>cbs, opt_func<span class="op">=</span>optim.Adam)</span>
+<span id="cb85-6"><a href="#cb85-6" aria-hidden="true" tabindex="-1"></a>learn.fit(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">loss</th>
+<th data-quarto-table-cell-role="th">epoch</th>
+<th data-quarto-table-cell-role="th">train</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.324</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td>0.143</td>
+<td>0</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-74-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-74-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="ebf657bd-84ca-4cdf-a287-aaec03ecb1fd" class="cell">
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>show_image(to_cpu(learn.model().clip(<span class="dv">0</span>, <span class="dv">1</span>)))<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-75-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/anubhavmaity\.github\.io\/myblog\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,1 +1,1 @@
-Sitemap: https://github.com/anubhavmaity/myblog/sitemap.xml
+Sitemap: https://anubhavmaity.github.io/myblog/sitemap.xml
