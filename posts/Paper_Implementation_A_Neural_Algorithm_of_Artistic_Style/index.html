@@ -234,6 +234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   from .autonotebook import tqdm as notebook_tqdm</code></pre>
 </div>
 </div>
+<p>In the paper the authors have used <code>vgg19</code> as the pretrained model, we can download that using <a href="https://timm.fast.ai/">timm’s library</a></p>
 <div id="db281b8c-bdd3-46bc-bdc4-f6d8b913df50" class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>timm.list_models(<span class="st">'*vgg19*'</span>, pretrained<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
