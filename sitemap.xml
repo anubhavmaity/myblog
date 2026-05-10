@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://anubhavmaity.github.io/myblog/about.html</loc>
-    <lastmod>2024-06-22T18:06:15.426Z</lastmod>
-  </url>
-  <url>
-    <loc>https://anubhavmaity.github.io/myblog/posts/lsh_with_zero_for_loops/index.html</loc>
-    <lastmod>2024-06-22T18:06:15.550Z</lastmod>
+    <loc>https://anubhavmaity.github.io/myblog/index.html</loc>
+    <lastmod>2026-05-10T04:46:44.390Z</lastmod>
   </url>
   <url>
     <loc>https://anubhavmaity.github.io/myblog/posts/movie_genre_prediction_using_hf_transformer/index.html</loc>
-    <lastmod>2024-06-22T18:06:15.550Z</lastmod>
+    <lastmod>2026-05-10T04:46:44.499Z</lastmod>
+  </url>
+  <url>
+    <loc>https://anubhavmaity.github.io/myblog/posts/lsh_with_zero_for_loops/index.html</loc>
+    <lastmod>2026-05-10T04:46:44.499Z</lastmod>
   </url>
   <url>
     <loc>https://anubhavmaity.github.io/myblog/posts/Paper_Implementation_A_Neural_Algorithm_of_Artistic_Style/index.html</loc>
-    <lastmod>2024-06-22T18:06:15.550Z</lastmod>
+    <lastmod>2026-05-10T04:46:44.498Z</lastmod>
   </url>
   <url>
-    <loc>https://anubhavmaity.github.io/myblog/index.html</loc>
-    <lastmod>2024-06-22T18:06:15.426Z</lastmod>
+    <loc>https://anubhavmaity.github.io/myblog/about.html</loc>
+    <lastmod>2026-05-10T04:46:44.390Z</lastmod>
   </url>
 </urlset>
