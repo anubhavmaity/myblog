@@ -16,11 +16,15 @@ about:
 
 ---
 
-Hey, I'm Anubhav Maity, a ML Engineer at Expedia Group. My day job involves training, deploying, and keeping an eye on ML models for fraud detection.
+Hey, I'm Anubhav Maity, a Staff Software Engineer on the AI Platform team at Bill.
 
-Outside of my job, I immerse myself in NLP and Deep Learning through coursework, participation in Kaggle competitions, and reading of research papers, with a particular focus on Generative AI Models.
+My day job revolves around building and scaling the AI Platform, which spans GenAI infrastructure and 50+ production models. The GenAI infra includes an LLM gateway connecting all major external providers and internal fine-tuned models, a fine-tuning platform, an evaluation platform, and an agentic workflow engine. The broader model portfolio covers a wide spectrum of use cases across Bill, from ResNets and vision transformers to language models, XGBoost, and CatBoost.
 
-Join me on this blog as I share my ML experiences and insights. Let's explore the world of AI and data together.
+Outside of work, I go deep on LLM internals, GenAI coursework, and building apps with GenAI. I stay sharp by competing on Kaggle and regularly reading research papers to keep up with the fast-moving frontier.
 
-Thanks for stopping by!
+This blog is where I share what I'm learning, building, and thinking about. I write for builders, tinkerers, and anyone genuinely curious about where AI is heading.
+
+All views and opinions expressed here are my own and do not represent my employer or anyone else.
+
+Thanks for stopping by. Let's explore together.
 
