@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/exploring_glm52/index.html",
       "/posts/wattbot/index.html",
       "/posts/Paper_Implementation_A_Neural_Algorithm_of_Artistic_Style/index.html",
       "/posts/lsh_with_zero_for_loops/index.html",
